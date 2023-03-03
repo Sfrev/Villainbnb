@@ -123,7 +123,7 @@ router.get('/list', async (req, res) => {
     // listar todas as bases secretas e ordenar por titulo
     const secretBases = await SecretBase.find().sort('titulo');
 
-    if (!secretBases) {
+    if (secretBases.length == 0) {
         return res.status(404).send({ erro: 'Bases Secretas não encontradas' });
     }
 
@@ -156,13 +156,13 @@ router.post('/list/cidade', async (req, res) => {
 
     try {
         
-        const secretBase = await SecretBase.find({ cidade: cidade });
+        const secretBases = await SecretBase.find({ cidade: cidade });
 
-        if (secretBase.length == 0 && secretBase.constructor === Array) {
+        if (secretBases.length == 0) {
             return res.status(404).send({ erro: 'Base Secreta não encontrada' });
         }
 
-        return res.status(200).send({ secretBase });
+        return res.status(200).send({ secretBases });
 
     }catch(err) {
         return res.status(404).send({ erro: `Erro ${err}` });
@@ -175,7 +175,7 @@ router.post('/list/tecnologias_disponiveis', async (req, res) => {
     try {
         const secretBases = await SecretBase.find({ tecnologia });
 
-        if (secretBases.length == 0 && secretBases.constructor === Array) {
+        if (secretBases.length == 0) {
             return res.status(404).send({ erro: 'Base Secreta não encontrada' });
         }
 
