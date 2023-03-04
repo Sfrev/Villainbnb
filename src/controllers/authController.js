@@ -5,8 +5,8 @@ const SecretBase = require('../models/SecretBase');
 
 const router = express.Router();
 
-const cidades = ["Nova York", "Rio de Janeiro", "Tóquio", undefined, ""];
-const tecnologias = ["Laboratório de Nanotecnologia", "Jardim de Ervas Venenosas", 
+const cities = ["Nova York", "Rio de Janeiro", "Tóquio", undefined, ""];
+const technologies = ["Laboratório de Nanotecnologia", "Jardim de Ervas Venenosas", 
 "Estande de Tiro e Academia de Parkour", undefined, ""];
 
 router.post('/register', async (req, res) => {
@@ -24,10 +24,10 @@ router.post('/register', async (req, res) => {
         else if (secretBaseNomeFachada) {
             return res.status(400).send({ erro: 'Nome da Fachada já cadastrado' });
         }
-        else if (!cidades.includes(secretBase.cidade)) {
+        else if (!cities.includes(secretBase.cidade)) {
             return res.status(400).send({ erro: 'Cidade não coberta pela associação de vilões' });
         }
-        else if (!tecnologias.includes(secretBase.tecnologia)) {
+        else if (!technologies.includes(secretBase.tecnologia)) {
             return res.status(400).send({ erro: 'Tecnologia não disponível' });
         }
         else if (secretBase.titulo == undefined || secretBase.nomeFachada == undefined || 
@@ -66,22 +66,22 @@ router.put('/update', async (req, res) => {
     try {
         
         const nomeFachadaObject = await SecretBase.findOne({ nomeFachada: secretBase.nomeFachada });
-        const tituloObject = await SecretBase.findOne({ titulo: secretBase.novoTitulo });
+        const novoTituloObject = await SecretBase.findOne({ titulo: secretBase.novoTitulo });
         const antigoTitulo = await SecretBase.findOne({ titulo: secretBase.titulo });
 
-        if (tituloObject) {
+        if (novoTituloObject) {
             return res.status(400).send({ erro: 'Novo titulo já cadastrado' });
         }
         else if (nomeFachadaObject) {
             return res.status(400).send({ erro: 'Nome da Fachada já cadastrado' });
         }
-        else if (!cidades.includes(secretBase.cidade)) {
+        else if (!cities.includes(secretBase.cidade)) {
             return res.status(400).send({ erro: 'Cidade não coberta pela associação de vilões' });
         }
-        else if (!tecnologias.includes(secretBase.tecnologia)) {
+        else if (!technologies.includes(secretBase.tecnologia)) {
             return res.status(400).send({ erro: 'Tecnologia não disponível' });
         }
-        else if (secretBase.novoTitulo === nomeFachadaObject || secretBase.nomeFachada === tituloObject) {
+        else if (secretBase.novoTitulo === nomeFachadaObject || secretBase.nomeFachada === novoTituloObject) {
             return res.status(400).send({ erro: 'Titulo e Nome da Fachada não podem ser iguais' });
         }
         else if (!await SecretBase.findOne({ titulo: secretBase.titulo })) {
