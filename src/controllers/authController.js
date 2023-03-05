@@ -9,12 +9,24 @@ const cities = ["Nova York", "Rio de Janeiro", "Tóquio", undefined, ""];
 const technologies = ["Laboratório de Nanotecnologia", "Jardim de Ervas Venenosas", 
 "Estande de Tiro e Academia de Parkour", undefined, ""];
 
+const senhaSecretaAssiacaoViloes = "senhaSecretaAssiacaoViloes906783472757375478";
+
 router.post('/register', async (req, res) => {
+
+    /*
+    Exemplo de requisição:
+    {
+        "titulo" : "Base", 
+        "nomeFachada" : "Base Secreta",
+        "cidade" : "Tóquio", 
+        "tecnologia" : "Estande de Tiro e Academia de Parkour",
+        "estaAlugada": false
+    }
+    */
     	
     const secretBase = req.body;
 
     try {
-
         const secretBaseTitulo = await SecretBase.findOne({ titulo: secretBase.titulo });
         const secretBaseNomeFachada = await SecretBase.findOne({ nomeFachada: secretBase.nomeFachada }); 
 
@@ -43,14 +55,14 @@ router.post('/register', async (req, res) => {
         }
         
         for (const key of Object.keys(secretBase)) {
-            if (typeof secretBase[key] != 'string') {
+            if (typeof secretBase[key] != 'string' && key != 'estaAlugada') {
                 return res.status(400).send({ erro:  `O campo ${key} deve ser do tipo String`});
             }
         }
 
-        const newSecretBase = await SecretBase.create(secretBase);
+        //nao é necessario informar o campo estaAlugada, pois ele ja é definido como false no model
 
-        newSecretBase.nomeFachada = undefined;
+        const newSecretBase = await SecretBase.create(secretBase);
 
         return res.status(201).send({ newSecretBase });
     }
@@ -61,52 +73,63 @@ router.post('/register', async (req, res) => {
 
 router.put('/update', async (req, res) => {
 
-    const secretBase = req.body;
+    /*
+    Exemplo de requisição:
+    {
+        "titulo" : "Base",
+        "novoTitulo" : "Base Secreta",
+        "nomeFachada" : "Base Secreta 2",
+        "cidade" : "Tóquio",
+        "tecnologia" : "Estande de Tiro e Academia de Parkour",
+        "estaAlugada": false
+    }
+    */
+
+    //se o inquilino nao informar algum campo, o valor permanece o mesmo
+
+    const baseSecretaAtualizada = req.body;
 
     try {
-        
-        const nomeFachadaObject = await SecretBase.findOne({ nomeFachada: secretBase.nomeFachada });
-        const novoTituloObject = await SecretBase.findOne({ titulo: secretBase.novoTitulo });
-        const antigoTitulo = await SecretBase.findOne({ titulo: secretBase.titulo });
+        const baseSecretaNomeFachada = await SecretBase.findOne({ nomeFachada: baseSecretaAtualizada.nomeFachada }); //Filtrando nome de fachada
+        const baseSecretaNovoTitulo = await SecretBase.findOne({ titulo: baseSecretaAtualizada.novoTitulo }); //Filtrando novo titulo
+        const baseSecretaAntiga = await SecretBase.findOne({ titulo: baseSecretaAtualizada.titulo }); //Filtrando base secreta antiga
 
-        if (novoTituloObject) {
-            return res.status(400).send({ erro: 'Novo titulo já cadastrado' });
+        if (!baseSecretaAntiga) {
+            return res.status(400).send({ erro: 'Título não encontrado' });
         }
-        else if (nomeFachadaObject) {
+        else if (baseSecretaNovoTitulo) {
+            return res.status(400).send({ erro: 'Novo título já cadastrado' });
+        }
+        else if (baseSecretaNomeFachada && baseSecretaNomeFachada.titulo != baseSecretaAtualizada.titulo) {
             return res.status(400).send({ erro: 'Nome da Fachada já cadastrado' });
         }
-        else if (!cities.includes(secretBase.cidade)) {
+        else if (baseSecretaAtualizada.titulo == baseSecretaAtualizada.nomeFachada) {
+            return res.status(400).send({ erro: 'Título e Nome da Fachada não podem ser iguais' });
+        }
+        else if (!cities.includes(baseSecretaAtualizada.cidade)) {
             return res.status(400).send({ erro: 'Cidade não coberta pela associação de vilões' });
         }
-        else if (!technologies.includes(secretBase.tecnologia)) {
+        else if (!technologies.includes(baseSecretaAtualizada.tecnologia)) {
             return res.status(400).send({ erro: 'Tecnologia não disponível' });
         }
-        else if (secretBase.novoTitulo === nomeFachadaObject || secretBase.nomeFachada === novoTituloObject) {
-            return res.status(400).send({ erro: 'Titulo e Nome da Fachada não podem ser iguais' });
-        }
-        else if (!await SecretBase.findOne({ titulo: secretBase.titulo })) {
-            return res.status(400).send({ erro: 'Titulo nao encontrado' });
-        }
 
-        for (const key of Object.keys(secretBase)) {
-            if (!(secretBase[key] == undefined || secretBase[key] == "")) {
-                if (key === 'novoTitulo') {                   
-                    antigoTitulo['titulo'] = secretBase[key];                  
-                }
-                else {
-                    antigoTitulo[key] = secretBase[key];
-                }
-            }
-
-            if (typeof secretBase[key] != 'string') {
+        for (const key of Object.keys(baseSecretaAtualizada)) {
+            if (typeof baseSecretaAtualizada[key] != 'string' && key != 'estaAlugada') {
                 return res.status(400).send({ erro:  `O campo ${key} deve ser do tipo String`});
             }
+            if (baseSecretaAtualizada[key] != undefined || baseSecretaAtualizada[key] != "") {
+                if (key === 'novoTitulo') {                   
+                    baseSecretaAntiga['titulo'] = baseSecretaAtualizada[key];                  
+                }
+                else {
+                    baseSecretaAntiga[key] = baseSecretaAtualizada[key];
+                }
+            }
         }
 
-        const updatedSecretBase = await SecretBase.findOneAndUpdate({ titulo: secretBase.titulo }, antigoTitulo);
+        baseSecretaAntiga.save();
 
-        updatedSecretBase.nomeFachada = undefined;
-        return res.send({ updatedSecretBase });
+        return res.send({ baseSecretaAntiga });
 
     }catch(err) {
         return res.status(404).send({ erro: `Update failed ${err}`});
@@ -114,6 +137,14 @@ router.put('/update', async (req, res) => {
 });
 
 router.delete('/delete', async (req, res) => {
+
+    /*
+    Exemplo de requisição:
+    {
+        "titulo" : "Base"
+    }
+    */
+
     const { titulo } = req.body;
     
     try {
@@ -122,9 +153,8 @@ router.delete('/delete', async (req, res) => {
         if (typeof titulo != 'string') {
             return res.status(400).send({ erro:  `O campo título deve ser do tipo String`});
         }
-
-        if (!secretBase) {
-            return res.status(204).send({ erro: 'Base Secreta não encontrada' });
+        else if (!secretBase) {
+            return res.status(200).send({ erro: 'Base Secreta não encontrada' });
         }
     
         return res.send({ secretBase });
@@ -138,7 +168,7 @@ router.get('/list', async (req, res) => {
     
     try {
     // listar todas as bases secretas e ordenar por titulo
-    const secretBases = await SecretBase.find().sort('titulo');
+    const secretBases = await SecretBase.find( {} ).sort('titulo').select('-_id -__v -nomeFachada');
 
     if (secretBases.length == 0) {
         return res.status(404).send({ erro: 'Bases Secretas não encontradas' });
@@ -152,16 +182,23 @@ router.get('/list', async (req, res) => {
 });
 
 router.post('/list/titulo', async (req, res) => {
+
+    /*
+    Exemplo de requisição:
+    {
+        "titulo" : "Base"
+    }
+    */
+
     const { titulo } = req.body;
 
     try {
-        const secretBase = await SecretBase.findOne({ titulo });
+        const secretBase = await SecretBase.findOne({ titulo }).select('-_id -__v -nomeFachada');
 
         if (typeof titulo != 'string') {
             return res.status(400).send({ erro:  `O campo título deve ser do tipo String`});
         }
-
-        if (!secretBase) {
+        else if (!secretBase) {
             return res.status(404).send({ erro: 'Base Secreta não encontrada' });
         }
 
@@ -173,17 +210,23 @@ router.post('/list/titulo', async (req, res) => {
 });
 
 router.post('/list/cidade', async (req, res) => {
+
+    /*
+    Exemplo de requisição:
+    {
+	    "cidade": "Rio de Janeiro"
+    }
+    */
+
     let { cidade } = req.body;
 
     try {
-        
-        const secretBases = await SecretBase.find({ cidade: cidade });
+        const secretBases = await SecretBase.find({ cidade: cidade }).select('-_id -__v -nomeFachada');
 
         if (typeof cidade != 'string') {
             return res.status(400).send({ erro:  `O campo cidade deve ser do tipo String`});
         }
-
-        if (secretBases.length == 0) {
+        else if (secretBases.length == 0) {
             return res.status(404).send({ erro: 'Base Secreta não encontrada' });
         }
 
@@ -195,21 +238,86 @@ router.post('/list/cidade', async (req, res) => {
 });
 
 router.post('/list/tecnologias_disponiveis', async (req, res) => {
+
+    /*
+    Exemplo de requisição:
+    {
+        "tecnologia": "Jardim de Ervas Venenosas"
+    }
+    */
+
     let { tecnologia } = req.body;
 
     try {
-        const secretBases = await SecretBase.find({ tecnologia });
+        const secretBases = await SecretBase.find({ tecnologia }).select('-_id -__v -nomeFachada');
 
         if (typeof tecnologia != 'string') {
             return res.status(400).send({ erro:  `O campo tecnologia deve ser do tipo String`});
         }
-
-        if (secretBases.length == 0) {
+        else if (secretBases.length == 0) {
             return res.status(404).send({ erro: 'Base Secreta não encontrada' });
         }
 
         return res.status(200).send({ secretBases });
 
+    }catch(err) {
+        return res.status(404).send({ erro: `Erro ${err}` });
+    }
+});
+
+router.post('/alugar', async (req, res) => {
+
+    /*
+    Exemplo de requisição:
+    {
+        "titulo": "Base",
+        "nomeFachada": "Base Secreta",
+        "senha": "senhaSecretaAssiacaoViloes906783472757375478"
+    }
+    */
+
+    const baseSecretaAlugarRequisicao = req.body;
+
+    try {
+        const baseSecretaAlugar = await SecretBase.findOne({ titulo: baseSecretaAlugarRequisicao.titulo });
+
+        if (!baseSecretaAlugar) {
+            return res.status(404).send({ erro: 'Base Secreta não encontrada' });
+        }
+        else if (baseSecretaAlugarRequisicao.nomeFachada != baseSecretaAlugar.nomeFachada) {
+            return res.status(400).send({ erro: 'Nome da fachada incorreto' });
+        }
+
+        for (const key of Object.keys(baseSecretaAlugarRequisicao)) {
+            if (typeof baseSecretaAlugarRequisicao[key] != 'string') {
+                return res.status(400).send({ erro:  `O campo ${key} deve ser do tipo String`});
+            }
+        }
+
+        if (baseSecretaAlugarRequisicao.senha !== senhaSecretaAssiacaoViloes) {
+            return res.status(401).send({ erro: 'Senha incorreta' });
+        }
+        else if (baseSecretaAlugar.estaAlugada) {
+            return res.status(400).send({ erro: 'Base Secreta já alugada' });
+        }
+
+        baseSecretaAlugar.estaAlugada = true;
+
+        await baseSecretaAlugar.save();
+
+        return res.status(200).send({ baseSecretaAlugar });
+
+    }catch(err) {
+        return res.status(404).send({ erro: `Erro ${err}` });
+    }
+
+});
+
+// APENAS PARA DEBUG
+router.delete('/deleteAll', async (req, res) => {
+    try {
+        await SecretBase.deleteMany({});
+        return res.status(200).send({ message: 'Todas as bases secretas foram deletadas' });
     }catch(err) {
         return res.status(404).send({ erro: `Erro ${err}` });
     }
