@@ -1,5 +1,4 @@
 const mongoose = require('../database');
-const bcrypt = require('bcryptjs');
 
 const SecretBaseSchema = new mongoose.Schema({
     titulo: {
@@ -11,7 +10,6 @@ const SecretBaseSchema = new mongoose.Schema({
         type: String, 
         required: true,
         unique: true,
-        select : false
     },
     cidade:{
         type: String, 
@@ -20,14 +18,11 @@ const SecretBaseSchema = new mongoose.Schema({
     tecnologia: {
         type: String, 
         required: true
-    }
-});
-
-SecretBaseSchema.pre('save', async function(next) {
-    const hash = await bcrypt.hash(this.nomeFachada, 10);
-    this.nomeFachada = hash;
-
-    next();
+    },
+    estaAlugada: {
+        type: Boolean,
+        required: true,
+    },
 });
 
 const SecretBase = mongoose.model('SecretBase', SecretBaseSchema);
