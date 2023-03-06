@@ -115,9 +115,9 @@ router.put('/update', async (req, res) => {
 
         for (const key of Object.keys(baseSecretaAtualizada)) {
             if (typeof baseSecretaAtualizada[key] != 'string' && key != 'estaAlugada') {
-                return res.status(400).send({ erro:  `O campo ${key} deve ser do tipo String`});
+                return res.status(400).send({ erro: `O campo ${key} deve ser do tipo String` });
             }
-            if (baseSecretaAtualizada[key] != undefined || baseSecretaAtualizada[key] != "") {
+            if (baseSecretaAtualizada[key]) {
                 if (key === 'novoTitulo') {                   
                     baseSecretaAntiga['titulo'] = baseSecretaAtualizada[key];                  
                 }
