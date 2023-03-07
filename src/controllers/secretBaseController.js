@@ -9,7 +9,7 @@ const cities = ["Nova York", "Rio de Janeiro", "Tóquio", undefined, ""];
 const technologies = ["Laboratório de Nanotecnologia", "Jardim de Ervas Venenosas", 
 "Estande de Tiro e Academia de Parkour", undefined, ""];
 
-const senhaSecretaAssiacaoViloes = "senhaSecretaAssiacaoViloes906783472757375478";
+const senhaSecretaAssiacaoViloes = "senhaSecretaAssociacaoViloes906783472757375478";
 
 router.post('/register', async (req, res) => {
 
@@ -127,7 +127,11 @@ router.put('/update', async (req, res) => {
             }
         }
 
-        baseSecretaAntiga.save();
+        baseSecretaAntiga.save().then(() => {
+            console.log('Base Secreta atualizada com sucesso');
+        }).catch((err) => {
+            console.log(`Erro ao atualizar a base secreta: ${err}`);
+        });
 
         return res.send({ baseSecretaAntiga });
 
@@ -165,10 +169,24 @@ router.delete('/delete', async (req, res) => {
 });
 
 router.get('/list', async (req, res) => {
+
+    const { titulo, cidade, tecnologia } = req.query;
+
+    var query = {};
     
     try {
-    // listar todas as bases secretas e ordenar por titulo
-    const secretBases = await SecretBase.find( {} ).sort('titulo').select('-_id -__v -nomeFachada');
+
+        if (titulo) {
+            query.titulo = titulo;
+        }
+        if (cidade) {
+            query.cidade = cidade;
+        }
+        if (tecnologia) {
+            query.tecnologia = tecnologia;
+        }
+
+    const secretBases = await SecretBase.find( query ).sort('titulo').select('-_id -__v -nomeFachada');
 
     if (secretBases.length == 0) {
         return res.status(404).send({ erro: 'Bases Secretas não encontradas' });
@@ -181,90 +199,6 @@ router.get('/list', async (req, res) => {
     }
 });
 
-router.post('/list/titulo', async (req, res) => {
-
-    /*
-    Exemplo de requisição:
-    {
-        "titulo" : "Base"
-    }
-    */
-
-    const { titulo } = req.body;
-
-    try {
-        const secretBase = await SecretBase.findOne({ titulo }).select('-_id -__v -nomeFachada');
-
-        if (typeof titulo != 'string') {
-            return res.status(400).send({ erro:  `O campo título deve ser do tipo String`});
-        }
-        else if (!secretBase) {
-            return res.status(404).send({ erro: 'Base Secreta não encontrada' });
-        }
-
-        return res.status(200).send({ secretBase });
-
-    }catch(err) {
-        return res.status(404).send({ erro: `Erro ${err}` });
-    }
-});
-
-router.post('/list/cidade', async (req, res) => {
-
-    /*
-    Exemplo de requisição:
-    {
-	    "cidade": "Rio de Janeiro"
-    }
-    */
-
-    let { cidade } = req.body;
-
-    try {
-        const secretBases = await SecretBase.find({ cidade: cidade }).select('-_id -__v -nomeFachada');
-
-        if (typeof cidade != 'string') {
-            return res.status(400).send({ erro:  `O campo cidade deve ser do tipo String`});
-        }
-        else if (secretBases.length == 0) {
-            return res.status(404).send({ erro: 'Base Secreta não encontrada' });
-        }
-
-        return res.status(200).send({ secretBases });
-
-    }catch(err) {
-        return res.status(404).send({ erro: `Erro ${err}` });
-    }
-});
-
-router.post('/list/tecnologias_disponiveis', async (req, res) => {
-
-    /*
-    Exemplo de requisição:
-    {
-        "tecnologia": "Jardim de Ervas Venenosas"
-    }
-    */
-
-    let { tecnologia } = req.body;
-
-    try {
-        const secretBases = await SecretBase.find({ tecnologia }).select('-_id -__v -nomeFachada');
-
-        if (typeof tecnologia != 'string') {
-            return res.status(400).send({ erro:  `O campo tecnologia deve ser do tipo String`});
-        }
-        else if (secretBases.length == 0) {
-            return res.status(404).send({ erro: 'Base Secreta não encontrada' });
-        }
-
-        return res.status(200).send({ secretBases });
-
-    }catch(err) {
-        return res.status(404).send({ erro: `Erro ${err}` });
-    }
-});
-
 router.post('/alugar', async (req, res) => {
 
     /*
@@ -272,7 +206,7 @@ router.post('/alugar', async (req, res) => {
     {
         "titulo": "Base",
         "nomeFachada": "Base Secreta",
-        "senha": "senhaSecretaAssiacaoViloes906783472757375478"
+        "senha": "senhaSecretaAssociacaoViloes906783472757375478"
     }
     */
 
@@ -314,7 +248,7 @@ router.post('/alugar', async (req, res) => {
 });
 
 // APENAS PARA DEBUG
-router.delete('/deleteAll', async (req, res) => {
+router.delete('/delete-all', async (req, res) => {
     try {
         await SecretBase.deleteMany({});
         return res.status(200).send({ message: 'Todas as bases secretas foram deletadas' });
@@ -323,4 +257,4 @@ router.delete('/deleteAll', async (req, res) => {
     }
 });
 
-module.exports = app => app.use('/auth', router);
+module.exports = app => app.use('/secret-base', router);
