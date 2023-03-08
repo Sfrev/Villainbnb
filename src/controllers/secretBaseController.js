@@ -158,7 +158,7 @@ router.delete('/delete', async (req, res) => {
             return res.status(400).send({ erro:  `O campo título deve ser do tipo String`});
         }
         else if (!secretBase) {
-            return res.status(200).send({ erro: 'Base Secreta não encontrada' });
+            return res.status(404).send({ erro: 'Base Secreta não encontrada' });
         }
     
         return res.status(204).send();
