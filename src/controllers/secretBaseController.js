@@ -27,8 +27,9 @@ router.post('/register', async (req, res) => {
     const secretBase = req.body;
 
     try {
+
         const secretBaseTitulo = await SecretBase.findOne({ titulo: secretBase.titulo });
-        const secretBaseNomeFachada = await SecretBase.findOne({ nomeFachada: secretBase.nomeFachada }); 
+        const secretBaseNomeFachada = await SecretBase.findOne({ nomeFachada: secretBase.nomeFachada });
 
         if (secretBaseTitulo) {
             return res.status(400).send({ erro: 'Titulo já cadastrado' });
@@ -50,7 +51,7 @@ router.post('/register', async (req, res) => {
         secretBase.tecnologia == "") {
             return res.status(400).send({ erro: 'Preencha todos os campos' });
         }
-        else if (secretBase.titulo == secretBaseNomeFachada || secretBase.nomeFachada == secretBaseTitulo) {
+        else if (secretBase.titulo == secretBase.nomeFachada) {
             return res.status(400).send({ erro: 'Titulo e Nome da Fachada não podem ser iguais' });
         }
         
@@ -103,7 +104,7 @@ router.put('/update', async (req, res) => {
         else if (baseSecretaNomeFachada && baseSecretaNomeFachada.titulo != baseSecretaAtualizada.titulo) {
             return res.status(400).send({ erro: 'Nome da Fachada já cadastrado' });
         }
-        else if (baseSecretaAtualizada.titulo == baseSecretaAtualizada.nomeFachada) {
+        else if (baseSecretaAtualizada.novoTitulo == baseSecretaAtualizada.nomeFachada) {
             return res.status(400).send({ erro: 'Título e Nome da Fachada não podem ser iguais' });
         }
         else if (!cities.includes(baseSecretaAtualizada.cidade)) {
@@ -158,7 +159,7 @@ router.delete('/delete', async (req, res) => {
             return res.status(400).send({ erro:  `O campo título deve ser do tipo String`});
         }
         else if (!secretBase) {
-            return res.status(200).send({ erro: 'Base Secreta não encontrada' });
+            return res.status(404).send({ erro: 'Base Secreta não encontrada' });
         }
     
         return res.status(204).send();
