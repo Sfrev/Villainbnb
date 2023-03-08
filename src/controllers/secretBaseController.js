@@ -172,7 +172,7 @@ router.get('/list', async (req, res) => {
 
     const { titulo, cidade, tecnologia } = req.query;
 
-    var query = {};
+    let query = {};
     
     try {
 
@@ -186,13 +186,13 @@ router.get('/list', async (req, res) => {
             query.tecnologia = tecnologia;
         }
 
-    const secretBases = await SecretBase.find( query ).sort('titulo').select('-_id -__v -nomeFachada');
+        const secretBases = await SecretBase.find( query ).sort('titulo').select('-_id -__v -nomeFachada');
 
-    if (secretBases.length == 0) {
-        return res.status(404).send({ erro: 'Bases Secretas não encontradas' });
-    }
+        if (secretBases.length == 0) {
+            return res.status(404).send({ erro: 'Bases Secretas não encontradas' });
+        }
 
-    return res.status(200).send({ secretBases });
+        return res.status(200).send({ secretBases });
 
     }catch(err) {
         return res.status(404).send({ erro: `Lista não encontrada ${err}` });
