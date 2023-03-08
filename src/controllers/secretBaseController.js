@@ -7,7 +7,7 @@ const router = express.Router();
 
 const cities = ["Nova York", "Rio de Janeiro", "Tóquio", undefined, ""];
 const technologies = ["Laboratório de Nanotecnologia", "Jardim de Ervas Venenosas", 
-"Estande de Tiro e Academia de Parkour", undefined, ""];
+"Estande de Tiro", "Academia de Parkour", undefined, ""];
 
 const senhaSecretaAssiacaoViloes = "senhaSecretaAssociacaoViloes906783472757375478";
 
@@ -133,7 +133,7 @@ router.put('/update', async (req, res) => {
             console.log(`Erro ao atualizar a base secreta: ${err}`);
         });
 
-        return res.send({ baseSecretaAntiga });
+        return res.status(200).send({ baseSecretaAntiga });
 
     }catch(err) {
         return res.status(404).send({ erro: `Update failed ${err}`});
@@ -161,7 +161,7 @@ router.delete('/delete', async (req, res) => {
             return res.status(200).send({ erro: 'Base Secreta não encontrada' });
         }
     
-        return res.send({ secretBase });
+        return res.status(204).send();
     }
     catch(err) {
         return res.status(404).send({ erro: `Delete failed ${err}` });
@@ -251,7 +251,7 @@ router.post('/alugar', async (req, res) => {
 router.delete('/delete-all', async (req, res) => {
     try {
         await SecretBase.deleteMany({});
-        return res.status(200).send({ message: 'Todas as bases secretas foram deletadas' });
+        return res.status(204).send();
     }catch(err) {
         return res.status(404).send({ erro: `Erro ${err}` });
     }
